@@ -6,3 +6,6 @@
 ./server_prep/centos-cis/5.1.x-crontab.sh
 ./server_prep/centos-cis/5.2.x-ssh.sh
 ./server_prep/centos-cis/5.4.1-password.sh
+
+./server_prep/centos-cis/pull-cis-scanner.sh
+./server_prep/centos-cis/cis-audit.sh
