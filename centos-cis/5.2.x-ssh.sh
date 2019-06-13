@@ -8,12 +8,12 @@ sshd_config_modify () {
   HAS_REGEX="^$KEY (.)+\$"
   if grep -P "$HAS_REGEX" $FILE; then
     echo "replacing line"
-    sed -i "s/^\s*$KEY\s.*$/$KEY $VALUE/gm" /etc/ssh/sshd_config
+    sed -i "s/^\s*$KEY\s.*$/$KEY $VALUE/gm" $FILE
   else
     HAS_COMMENT_REGEX+="^#( )*$KEY (.)+\$"
     if grep -P "$HAS_COMMENT_REGEX" $FILE; then
       echo "replacing comment"
-      sed -i "s/^#\s*$KEY\s.*$/$KEY $VALUE/gm" /etc/ssh/sshd_config
+      sed -i "s/^#\s*$KEY\s.*$/$KEY $VALUE/gm" $FILE
     else
       echo "Adding new"
       echo "" >> $FILE
