@@ -9,3 +9,4 @@ chmod 700 /home/shawn/.ssh
 chmod 600 /home/shawn/.ssh/authorized_keys
 chown -R shawn:shawn /home/shawn
 usermod -aG wheel shawn
+passwd shawn
