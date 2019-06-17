@@ -23,8 +23,15 @@ sshd_config_modify () {
 }
 
 sshd_config_modify Protocol 2
-sshd_config_modify LogLevel INFO
+sshd_config_modify LogLevel VERBOSE
 sshd_config_modify X11Forwarding no
+sshd_config_modify AllowTcpForwarding no
+sshd_config_modify ClientAliveCountMax 2
+sshd_config_modify Compression no
+sshd_config_modify MaxSessions 2
+sshd_config_modify TCPKeepAlive no
+sshd_config_modify UseDNS no
+sshd_config_modify AllowAgentForwarding no
 sshd_config_modify MaxAuthTries 3
 sshd_config_modify IgnoreRhosts yes
 sshd_config_modify HostbasedAuthentication no
@@ -35,6 +42,7 @@ sshd_config_modify Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc,
 sshd_config_modify ClientAliveInterval 60
 sshd_config_modify LoginGraceTime 45s
 sshd_config_modify AllowGroups wheel
-echo "Authorized Users Only" >> /etc/ssh/sshd-banner
+echo "Authorized Users Only" >> /etc/issue
+echo "Authorized Users Only" >> /etc/issue.net
 sshd_config_modify Banner /etc/issue
 sshd_config_modify MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
