@@ -39,7 +39,7 @@ systemctl enable clam-freshclam.service
 systemctl start clam-freshclam.service
 
 # Clean up the clamav service definition
-mv /usr/lib/systemd/system/clamd@.service /usr/lib/systemd/system/clamd.service
+mv /usr/lib/systemd/system/clamd@.service /usr/lib/systemd/system/clamd.service.bak
 sed -i "s/clamd@.service/clamd.service/gm" /usr/lib/systemd/system/clamd@scan.service
 cat > /usr/lib/systemd/system/clamd.service << "EOF"
 [Unit]
