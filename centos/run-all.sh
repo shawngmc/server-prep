@@ -20,3 +20,6 @@ $scriptDir/process-hardening.sh 2 >&1 | tee /var/log/server-prep/process-hardeni
 # Pull scanner and run
 $scriptDir/pull-cis-scanner.sh | tee /var/log/server-prep/centos-audit.log
 $scriptDir/cis-audit.sh 2>&1 | tee /var/log/server-prep/centos-audit.log
+
+$scriptDir/pull-lynis.sh 2>&1 | tee /var/log/server-prep/centos-audit.log
+$scriptDir/lynis/lynix audit system 2>&1 | tee /var/log/server-prep/centos-audit.log
