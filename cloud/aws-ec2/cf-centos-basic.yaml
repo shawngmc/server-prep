@@ -1,0 +1,112 @@
+# http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-us-west-2.html#w1ab2c21c45c15c15
+# Amazon EC2 instance in a security group Creates an Amazon EC2 instance in an Amazon EC2 security group.
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Sample Template EC2InstanceWithSecurityGroupSample:
+  Create an Amazon EC2 instance running the Amazon Linux AMI. The AMI is chosen based
+  on the region in which the stack is run. This example creates an EC2 security group
+  for the instance to give you SSH access. **WARNING** This template creates an Amazon
+  EC2 instance. You will be billed for the AWS resources used if you create a stack
+  from this template.'
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: m5.large
+    AllowedValues:
+    - m5.large
+    - m5.2xlarge
+    - m5a.large
+    - m5a.2xlarge
+    - t3.2xlarge
+    - t3.large
+    - t3.medium
+    - t3.micro
+    - t3.nano
+    - t3.small
+    - t3.xlarge
+    - t3a.2xlarge
+    - t3a.large
+    - t3a.medium
+    - t3a.micro
+    - t3a.nano
+    - t3a.small
+    - t3a.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType:
+        Ref: InstanceType
+      SecurityGroups:
+      - Ref: InstanceSecurityGroup
+      KeyName:
+        Ref: KeyName
+      ImageId: ami-02eac2c0129f6376b
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 50
+        -
+          DeviceName: /dev/sdb
+          Ebs:
+            VolumeSize: 100
+      UserData:
+        Fn::Base64: !Sub |
+          #cloud-config
+          output: { all : '| tee -a /var/log/cloud-init-output.log' }
+          repo_update: true
+          repo_upgrade: all
+
+          packages:
+          - git
+
+          runcmd:
+          - git clone https://github.com/shawngmc/server-prep
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp:
+          Ref: SSHLocation
+Outputs:
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value:
+      Ref: EC2Instance
+  AZ:
+    Description: Availability Zone of the newly created EC2 instance
+    Value:
+      Fn::GetAtt:
+      - EC2Instance
+      - AvailabilityZone
+  PublicDNS:
+    Description: Public DNSName of the newly created EC2 instance
+    Value:
+      Fn::GetAtt:
+      - EC2Instance
+      - PublicDnsName
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value:
+      Fn::GetAtt:
+      - EC2Instance
+      - PublicIp
