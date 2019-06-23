@@ -1,0 +1,114 @@
+# http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-us-west-2.html#w1ab2c21c45c15c15
+# Amazon EC2 instance in a security group Creates an Amazon EC2 instance in an Amazon EC2 security group.
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Sample Template EC2InstanceWithSecurityGroupSample:
+  Create an Amazon EC2 instance running the Amazon Linux AMI. The AMI is chosen based
+  on the region in which the stack is run. This example creates an EC2 security group
+  for the instance to give you SSH access. **WARNING** This template creates an Amazon
+  EC2 instance. You will be billed for the AWS resources used if you create a stack
+  from this template.'
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: m5.large
+    AllowedValues:
+    - m5.large
+    - m5.2xlarge
+    - m5a.large
+    - m5a.2xlarge
+    - t3.2xlarge
+    - t3.large
+    - t3.medium
+    - t3.micro
+    - t3.nano
+    - t3.small
+    - t3.xlarge
+    - t3a.2xlarge
+    - t3a.large
+    - t3a.medium
+    - t3a.micro
+    - t3a.nano
+    - t3a.small
+    - t3a.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType:
+        Ref: InstanceType
+      SecurityGroups:
+      - Fn::ImportValue: ControlPlaneSecGroup
+      - Fn::ImportValue: NodeSecGroup
+      - Fn::ImportValue: WorkerSecGroup
+      KeyName:
+        Ref: KeyName
+      ImageId: ami-02eac2c0129f6376b
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 50
+        -
+          DeviceName: /dev/sdb
+          Ebs:
+            VolumeSize: 100
+      UserData:
+        Fn::Base64: !Sub |
+          #cloud-config
+          output: { all : '| tee -a /var/log/cloud-init-output.log' }
+          repo_update: true
+          repo_upgrade: all
+
+          packages:
+          - git
+
+          runcmd:
+          - git clone https://github.com/shawngmc/server-prep
+          - cd /server-prep
+          - ./cloud/aws-ec2/usersetup.sh
+          - ./centos/run-all.sh
+          - echo "export PATH=$PATH:/usr/local/bin/" >> ~/.bashrc
+          - . ~/.bashrc
+          - curl -sfL https://get.k3s.io -o /server-prep/k3s.sh
+          - chmod u+x /server-prep/k3s.sh
+          - /server-prep/k3s.sh
+          - sleep 5
+          - kubectl get nodes
+          - kubectl get po -n kube-system
+          - kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+          - kubectl get storageclass
+          - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > /server-prep/install-helm.sh
+          - chmod u+x install-helm.sh
+          - /server-prep/install-helm.sh
+          - kubectl -n kube-system create serviceaccount tiller
+          - kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+Outputs:
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value:
+      Ref: EC2Instance
+  AZ:
+    Description: Availability Zone of the newly created EC2 instance
+    Value:
+      Fn::GetAtt:
+      - EC2Instance
+      - AvailabilityZone
+  PublicDNS:
+    Description: Public DNSName of the newly created EC2 instance
+    Value:
+      Fn::GetAtt:
+      - EC2Instance
+      - PublicDnsName
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value:
+      Fn::GetAtt:
+      - EC2Instance
+      - PublicIp
