@@ -4,12 +4,13 @@
 sudo yum -y install policycoreutils-python
 
 # Fix Firewall
+# Prevents CoreDNS and Traefik failures
 sudo firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 1 -i cni0 -s 10.42.0.0/16 -j ACCEPT
 sudo firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 1 -s 10.42.0.0/15 -j ACCEPT
 sudo firewall-cmd --reload
 
 # Install K3S
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | sudo sh -
 
 # Fix perms and PATH for non-root user
 sudo chmod 777 /etc/rancher/k3s/k3s.yaml
